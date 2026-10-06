@@ -1,695 +1,557 @@
 <!doctype html>
 <html lang="en">
 <head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<meta name="theme-color" content="#101713">
-	<title>Wildlight | Card Atelier</title>
-	<link rel="preconnect" href="https://fonts.googleapis.com">
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-	<style>
-		:root {
-			color-scheme: dark;
-			--ink: #eef1e9;
-			--muted: #9aa49a;
-			--line: rgba(235, 239, 224, .12);
-			--panel: #19221d;
-			--panel-raised: #202b24;
-			--ground: #101713;
-			--green: #c3ed78;
-			--gold: #f4ca77;
-			--coral: #f28570;
-			--blue: #84c7d5;
-			--common: #9aa49a;
-			--uncommon: #79c99a;
-			--rare: #69bad6;
-			--epic: #c497e8;
-			--legendary: #f2bd65;
-			--font: "DM Sans", sans-serif;
-			--display: "Space Grotesk", sans-serif;
-		}
-
-		* { box-sizing: border-box; }
-		body { margin: 0; background: var(--ground); color: var(--ink); font: 14px/1.5 var(--font); min-width: 320px; }
-		button { color: inherit; font: inherit; }
-		button:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
-		.app { min-height: 100vh; display: grid; grid-template-columns: 238px minmax(0, 1fr); }
-		.sidebar { display: flex; flex-direction: column; position: fixed; inset: 0 auto 0 0; width: 238px; padding: 27px 18px 20px; background: #151d18; border-right: 1px solid var(--line); z-index: 5; }
-		.brand { display: flex; align-items: center; gap: 11px; padding: 0 10px; margin-bottom: 42px; }
-		.brand-mark { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 11px; background: var(--green); color: #172015; font-size: 20px; font-weight: 700; }
-		.brand-name { font: 600 17px var(--display); letter-spacing: 0; }
-		.brand-caption { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .12em; }
-		.nav-label { padding: 0 11px; margin-bottom: 9px; color: #748076; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .13em; }
-		.nav-list { display: grid; gap: 4px; }
-		.nav-button { width: 100%; display: flex; align-items: center; gap: 12px; border: 0; background: transparent; padding: 11px 12px; border-radius: 7px; color: #a6afa7; text-align: left; cursor: pointer; transition: background .16s, color .16s; }
-		.nav-button:hover { background: rgba(255,255,255,.05); color: var(--ink); }
-		.nav-button.active { color: var(--green); background: rgba(195,237,120,.09); }
-		.nav-icon { width: 20px; text-align: center; font-size: 16px; }
-		.sidebar-bottom { margin-top: auto; }
-		.collection-note { padding: 15px 14px; border: 1px solid var(--line); border-radius: 8px; background: linear-gradient(145deg, rgba(195,237,120,.07), rgba(132,199,213,.035)); }
-		.collection-note strong { display: block; margin-bottom: 3px; font: 600 14px var(--display); }
-		.collection-note span { color: var(--muted); font-size: 11px; }
-		.collection-progress { height: 4px; margin-top: 13px; border-radius: 9px; background: #344037; overflow: hidden; }
-		.collection-progress > span { display: block; height: 100%; width: 0; background: var(--green); transition: width .3s; }
-		.workspace { grid-column: 2; min-width: 0; }
-		.topbar { height: 66px; position: sticky; top: 0; z-index: 4; display: flex; align-items: center; justify-content: space-between; padding: 0 38px; background: rgba(16,23,19,.93); backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); }
-		.breadcrumb { color: var(--muted); font-size: 12px; }
-		.breadcrumb b { margin-left: 8px; color: var(--ink); font-weight: 600; }
-		.topbar-right { display: flex; align-items: center; gap: 18px; }
-		.wallet { display: flex; align-items: center; gap: 8px; font: 600 13px var(--display); }
-		.coin { color: var(--gold); font-size: 16px; }
-		.profile { width: 31px; height: 31px; display: grid; place-items: center; border: 1px solid rgba(195,237,120,.3); border-radius: 50%; background: #29352b; color: var(--green); font-size: 12px; }
-		main { max-width: 1420px; margin: 0 auto; padding: 32px 38px 60px; }
-		.view { display: none; animation: view-in .28s ease both; }
-		.view.active { display: block; }
-		@keyframes view-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-		.eyebrow { display: flex; align-items: center; gap: 8px; color: var(--green); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .14em; }
-		.eyebrow::before { content: ""; width: 15px; height: 1px; background: currentColor; }
-		h1, h2, h3, p { margin-top: 0; }
-		h1, h2, h3 { font-family: var(--display); letter-spacing: 0; }
-		h1 { margin: 9px 0 7px; font-size: clamp(27px, 3vw, 37px); line-height: 1.1; }
-		h2 { margin: 0; font-size: 20px; }
-		h3 { margin: 0; font-size: 15px; }
-		.subheading { margin: 0; color: var(--muted); font-size: 13px; }
-		.section-heading { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 19px; }
-		.section-heading .subheading { margin-top: 5px; }
-		.button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 38px; padding: 0 14px; border: 1px solid var(--line); border-radius: 6px; background: #202a23; color: var(--ink); font-weight: 600; cursor: pointer; transition: transform .14s, background .14s, border-color .14s; }
-		.button:hover:not(:disabled) { transform: translateY(-1px); border-color: rgba(195,237,120,.48); background: #29352b; }
-		.button:disabled { opacity: .42; cursor: not-allowed; }
-		.button.primary { border-color: var(--green); background: var(--green); color: #182116; }
-		.button.primary:hover:not(:disabled) { background: #d2f49a; }
-		.button.subtle { min-height: 31px; padding: 0 10px; font-size: 11px; }
-		.button.danger { color: #ffb0a1; }
-
-		.shop-hero { position: relative; min-height: 309px; display: grid; grid-template-columns: 1.05fr .95fr; overflow: hidden; border: 1px solid rgba(218,231,191,.13); border-radius: 9px; background: #18231c; }
-		.shop-hero::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg, #18231c 4%, rgba(24,35,28,.97) 32%, rgba(24,35,28,.57) 65%, rgba(24,35,28,.18)); }
-		.hero-photo { position: absolute; inset: 0 0 0 35%; background: url("https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=1300&q=85") center 48% / cover; opacity: .8; }
-		.hero-content { position: relative; z-index: 1; align-self: center; max-width: 510px; padding: 36px 39px; }
-		.hero-content h1 { max-width: 410px; font-size: clamp(32px, 4vw, 47px); }
-		.hero-content .subheading { max-width: 360px; line-height: 1.75; }
-		.hero-actions { display: flex; align-items: center; gap: 16px; margin-top: 22px; }
-		.pack-price { color: #dae0d4; font-size: 12px; }
-		.pack-price b { color: var(--gold); font-size: 14px; }
-		.hero-side { position: relative; z-index: 1; display: flex; align-items: end; justify-content: end; padding: 25px; }
-		.featured-card { width: 130px; height: 180px; margin: 0 17px 3px 0; transform: rotate(7deg); box-shadow: 0 15px 55px #080d0aa6; }
-		.feature-chip { position: absolute; top: 24px; right: 24px; padding: 6px 10px; border: 1px solid rgba(255,255,255,.2); border-radius: 20px; background: #101713a6; color: #f5d49d; font-size: 10px; }
-		.feature-chip i { color: var(--gold); font-style: normal; }
-		.stat-row { display: grid; grid-template-columns: repeat(3, 1fr); margin: 20px 0 34px; border: 1px solid var(--line); border-radius: 7px; background: #151e19; }
-		.stat { display: flex; align-items: center; gap: 12px; padding: 14px 18px; }
-		.stat + .stat { border-left: 1px solid var(--line); }
-		.stat-icon { font-size: 18px; }
-		.stat strong { display: block; font: 600 17px var(--display); }
-		.stat span:last-child { color: var(--muted); font-size: 10px; }
-		.rarity-list { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
-		.rarity-pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 9px; border: 1px solid var(--line); border-radius: 20px; color: #c7cec5; font-size: 10px; }
-		.rarity-pill i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-		.rarity-pill.common { color: var(--common); } .rarity-pill.uncommon { color: var(--uncommon); } .rarity-pill.rare { color: var(--rare); } .rarity-pill.epic { color: var(--epic); } .rarity-pill.legendary { color: var(--legendary); }
-		.recent-section { margin-top: 33px; }
-		.card-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; }
-		.game-card { position: relative; aspect-ratio: .73; min-width: 0; overflow: hidden; isolation: isolate; display: flex; flex-direction: column; justify-content: space-between; padding: 9px; border: 1px solid color-mix(in srgb, var(--rarity-color), transparent 48%); border-radius: 8px; background: linear-gradient(155deg, color-mix(in srgb, var(--rarity-color), #18211b 78%), #111813 72%); box-shadow: 0 3px 14px #0002; transition: transform .18s, box-shadow .18s; }
-		.game-card:hover { transform: translateY(-3px); box-shadow: 0 9px 20px #0004; }
-		.card-art { position: absolute; z-index: -2; inset: 0 0 24% 0; background-size: cover; background-position: center; opacity: .84; }
-		.card-art::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, #11181308 25%, #11181335 64%, #111813 100%); }
-		.card-top { display: flex; align-items: center; justify-content: space-between; }
-		.rarity-gem, .cost-gem { min-width: 21px; height: 21px; display: grid; place-items: center; border: 1px solid color-mix(in srgb, var(--rarity-color), transparent 30%); border-radius: 50%; background: #101713d9; color: var(--rarity-color); font-size: 10px; font-weight: 700; }
-		.card-illustration { position: absolute; top: 34%; left: 50%; transform: translate(-50%, -50%); font-size: clamp(29px, 3vw, 43px); filter: drop-shadow(0 4px 8px #080c0a90); }
-		.card-info { margin-top: auto; }
-		.card-name { margin: 0 0 2px; overflow: hidden; font: 600 12px/1.25 var(--display); text-overflow: ellipsis; white-space: nowrap; }
-		.card-type { color: #acb6aa; font-size: 9px; }
-		.card-stats { display: flex; justify-content: space-between; margin-top: 7px; padding-top: 6px; border-top: 1px solid #ffffff21; font: 600 10px var(--display); }
-		.card-stats span:first-child { color: var(--coral); } .card-stats span:last-child { color: var(--green); }
-		.card-art img { width: 100%; height: 100%; display: block; object-fit: cover; }
-		.card-sparkle { position: absolute; right: 8px; top: 32px; color: var(--rarity-color); font-size: 11px; }
-		.empty-state { grid-column: 1/-1; padding: 36px 20px; border: 1px dashed var(--line); border-radius: 8px; color: var(--muted); text-align: center; }
-
-		.toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 9px; margin: 19px 0; }
-		.search { width: min(220px, 100%); height: 36px; padding: 0 11px; border: 1px solid var(--line); border-radius: 6px; background: #17201a; color: var(--ink); font: inherit; }
-		.search::placeholder { color: #788379; }
-		.filter-select { height: 36px; padding: 0 28px 0 10px; border: 1px solid var(--line); border-radius: 6px; background: #17201a; color: var(--ink); font: inherit; }
-		.toolbar-spacer { flex: 1; }
-		.count-label { color: var(--muted); font-size: 11px; }
-		.collection-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 15px; }
-		.collection-item { min-width: 0; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: #171f1a; }
-		.collection-item .game-card { width: 100%; max-height: 272px; aspect-ratio: .82; }
-		.collection-item .card-illustration { font-size: 34px; }
-		.item-meta { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin: 10px 1px 9px; color: var(--muted); font-size: 10px; }
-		.item-meta strong { color: var(--ink); font-size: 11px; }
-		.item-actions { display: flex; gap: 6px; }
-		.item-actions .button { flex: 1; }
-		.rarity-text { color: var(--rarity-color); text-transform: capitalize; }
-
-		.deck-layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 20px; align-items: start; }
-		.deck-controls { display: flex; align-items: center; gap: 8px; }
-		.deck-summary { padding: 17px; border: 1px solid var(--line); border-radius: 8px; background: #171f1a; }
-		.deck-total { display: flex; align-items: baseline; justify-content: space-between; padding-bottom: 13px; border-bottom: 1px solid var(--line); }
-		.deck-total strong { font: 600 28px var(--display); }
-		.deck-total span { color: var(--muted); font-size: 11px; }
-		.deck-meter { height: 5px; margin: 12px 0 15px; border-radius: 10px; background: #303b32; overflow: hidden; }
-		.deck-meter span { display: block; width: 0; height: 100%; background: var(--green); transition: width .2s; }
-		.deck-list { display: grid; gap: 5px; max-height: 400px; overflow: auto; }
-		.deck-row { display: flex; align-items: center; gap: 8px; padding: 6px; border-radius: 5px; background: #202921; }
-		.deck-row .mini-art { width: 30px; height: 35px; border-radius: 3px; background-size: cover; background-position: center; }
-		.deck-row-copy { flex: 1; min-width: 0; }
-		.deck-row-copy strong { display: block; overflow: hidden; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
-		.deck-row-copy span { color: var(--muted); font-size: 9px; }
-		.deck-row button { width: 22px; height: 24px; border: 0; border-radius: 4px; background: #303b32; cursor: pointer; }
-		.deck-row button:hover { background: #49564a; }
-		.deck-empty { padding: 17px 7px; color: var(--muted); font-size: 11px; text-align: center; }
-		.deck-hint { margin: 13px 0 0; color: var(--muted); font-size: 10px; line-height: 1.65; }
-
-		.battle-layout { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 18px; align-items: start; }
-		.battle-arena { min-height: 425px; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: linear-gradient(160deg, #1a2820, #17221c 48%, #20251a); }
-		.arena-header { display: flex; align-items: center; justify-content: space-between; padding: 15px 17px; border-bottom: 1px solid var(--line); }
-		.turn-label { color: var(--green); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
-		.arena-content { padding: 15px 17px 18px; }
-		.fighter { display: flex; align-items: center; gap: 10px; }
-		.fighter-avatar { width: 37px; height: 37px; display: grid; place-items: center; border: 1px solid #f2857066; border-radius: 50%; background: #402d2b; font-size: 19px; }
-		.fighter.you .fighter-avatar { border-color: #c3ed7866; background: #2e3e2b; }
-		.fighter-name { font: 600 12px var(--display); }
-		.health-track { width: 118px; height: 5px; margin-top: 4px; border-radius: 6px; background: #3c4140; overflow: hidden; }
-		.health-track i { display: block; width: 100%; height: 100%; background: var(--coral); transition: width .3s; }
-		.fighter.you .health-track i { background: var(--green); }
-		.health-number { margin-left: auto; font: 600 13px var(--display); }
-		.board { min-height: 108px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-content: center; gap: 8px; padding: 12px 0; }
-		.board-empty { grid-column: 1/-1; padding: 12px; color: #829086; font-size: 10px; text-align: center; }
-		.board-unit { position: relative; min-height: 74px; display: grid; align-content: center; justify-items: center; gap: 3px; padding: 6px 4px 17px; border: 1px solid color-mix(in srgb, var(--rarity-color), transparent 46%); border-radius: 7px; background: #18221b; }
-		.board-unit.ready { box-shadow: 0 0 0 1px #c3ed7850; }
-		.board-unit .unit-emoji { font-size: 21px; }
-		.board-unit strong { max-width: 100%; overflow: hidden; font: 600 9px var(--display); text-overflow: ellipsis; white-space: nowrap; }
-		.unit-numbers { position: absolute; right: 5px; bottom: 3px; left: 5px; display: flex; justify-content: space-between; font: 600 10px var(--display); }
-		.unit-numbers span:first-child { color: var(--coral); } .unit-numbers span:last-child { color: var(--green); }
-		.arena-divider { display: flex; align-items: center; gap: 9px; color: #79847a; font-size: 9px; text-transform: uppercase; letter-spacing: .12em; }
-		.arena-divider::before, .arena-divider::after { content: ""; flex: 1; height: 1px; background: var(--line); }
-		.battle-bottom { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-top: 7px; border-top: 1px solid var(--line); }
-		.mana { display: flex; align-items: center; gap: 7px; color: #a6d9e0; font: 600 12px var(--display); }
-		.mana-dots { display: flex; gap: 3px; }
-		.mana-dots i { width: 7px; height: 7px; border: 1px solid #83cad7; border-radius: 50%; background: #253e42; }
-		.mana-dots i.filled { background: #83cad7; }
-		.hand-label { margin: 16px 0 7px; color: var(--muted); font-size: 10px; }
-		.battle-hand { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 7px; }
-		.hand-card { min-width: 0; border: 0; padding: 0; background: none; text-align: left; cursor: pointer; }
-		.hand-card .game-card { width: 100%; aspect-ratio: .85; padding: 6px; border-radius: 5px; }
-		.hand-card .card-illustration { font-size: 24px; }
-		.hand-card .card-name { font-size: 9px; }
-		.hand-card .card-type, .hand-card .card-stats { font-size: 8px; }
-		.hand-card:disabled { opacity: .45; cursor: not-allowed; }
-		.battle-side { padding: 16px; border: 1px solid var(--line); border-radius: 8px; background: #171f1a; }
-		.battle-side h3 { margin-bottom: 7px; }
-		.battle-side p { margin: 0 0 15px; color: var(--muted); font-size: 11px; line-height: 1.65; }
-		.battle-side .button { width: 100%; margin-bottom: 8px; }
-		.battle-log { min-height: 90px; max-height: 170px; overflow-y: auto; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); color: #aeb8ad; font-size: 10px; }
-		.battle-log div + div { margin-top: 6px; }
-		.battle-result { margin-top: 10px; color: var(--gold); font-weight: 700; }
-
-		.overlay { position: fixed; inset: 0; z-index: 20; display: none; place-items: center; padding: 22px; background: #0a100de0; backdrop-filter: blur(9px); }
-		.overlay.open { display: grid; animation: view-in .2s ease both; }
-		.pack-modal { width: min(900px, 100%); max-height: 92vh; overflow: auto; padding: 22px; border: 1px solid var(--line); border-radius: 10px; background: #18211b; box-shadow: 0 24px 90px #0008; }
-		.modal-heading { display: flex; align-items: start; justify-content: space-between; margin-bottom: 18px; }
-		.modal-heading h2 { margin: 0 0 3px; }
-		.modal-heading p { margin: 0; color: var(--muted); font-size: 11px; }
-		.close-button { width: 31px; height: 31px; border: 1px solid var(--line); border-radius: 6px; background: transparent; font-size: 18px; cursor: pointer; }
-		.pack-results { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 11px; }
-		.pack-results .game-card { animation: reveal .4s cubic-bezier(.2,.85,.3,1) both; }
-		.pack-results .game-card:nth-child(2) { animation-delay: .07s; } .pack-results .game-card:nth-child(3) { animation-delay: .14s; } .pack-results .game-card:nth-child(4) { animation-delay: .21s; } .pack-results .game-card:nth-child(5) { animation-delay: .28s; }
-		@keyframes reveal { from { opacity: 0; transform: translateY(12px) rotate(-2deg) scale(.95); } to { opacity: 1; transform: translateY(0) rotate(0) scale(1); } }
-		.modal-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 19px; }
-		.modal-footer span { color: var(--muted); font-size: 11px; }
-		.toast { position: fixed; z-index: 30; right: 24px; bottom: 24px; transform: translateY(12px); opacity: 0; padding: 11px 15px; border: 1px solid #c3ed7855; border-radius: 7px; background: #202d23; color: var(--ink); font-size: 12px; pointer-events: none; transition: .22s; }
-		.toast.show { transform: translateY(0); opacity: 1; }
-		.mobile-brand { display: none; }
-
-		@media (max-width: 1050px) {
-			.card-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-			.collection-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-			.deck-layout { grid-template-columns: minmax(0, 1fr) 270px; }
-			.battle-layout { grid-template-columns: minmax(0, 1fr) 240px; }
-			main { padding-right: 27px; padding-left: 27px; }
-			.topbar { padding-right: 27px; padding-left: 27px; }
-		}
-		@media (max-width: 760px) {
-			.app { display: block; padding-bottom: 64px; }
-			.sidebar { position: fixed; inset: auto 0 0; width: auto; height: 61px; padding: 5px 8px max(5px, env(safe-area-inset-bottom)); border-top: 1px solid var(--line); border-right: 0; background: #151d18f5; backdrop-filter: blur(15px); }
-			.brand, .nav-label, .sidebar-bottom { display: none; }
-			.nav-list { display: grid; grid-template-columns: repeat(4, 1fr); height: 100%; }
-			.nav-button { flex-direction: column; justify-content: center; gap: 1px; padding: 3px 2px; border-radius: 5px; font-size: 9px; }
-			.nav-icon { font-size: 16px; }
-			.workspace { width: 100%; }
-			.topbar { height: 54px; padding: 0 17px; }
-			.breadcrumb { display: none; }
-			.mobile-brand { display: block; font: 600 15px var(--display); }
-			main { padding: 23px 16px 38px; }
-			.shop-hero { min-height: 312px; grid-template-columns: 1fr; }
-			.hero-photo { inset: 0; opacity: .52; }
-			.shop-hero::after { background: linear-gradient(90deg, #18231cdd, #18231c72); }
-			.hero-content { padding: 28px 22px; }
-			.hero-content h1 { max-width: 330px; font-size: 36px; }
-			.hero-side { position: absolute; inset: 0 0 0 auto; width: 38%; padding: 12px; }
-			.featured-card { width: 93px; height: 130px; margin: 0 3px 12px 0; }
-			.feature-chip { top: 12px; right: 11px; font-size: 9px; }
-			.stat-row { margin: 15px 0 27px; }
-			.stat { gap: 7px; padding: 11px 8px; }
-			.stat-icon { font-size: 15px; }
-			.stat strong { font-size: 14px; }
-			.stat span:last-child { font-size: 9px; }
-			.card-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-			.card-grid .game-card { padding: 7px; }
-			.card-grid .card-name { font-size: 10px; }
-			.collection-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
-			.collection-item { padding: 7px; }
-			.collection-item .game-card { aspect-ratio: .78; max-height: none; }
-			.item-actions { flex-direction: column; }
-			.item-actions .button { width: 100%; }
-			.deck-layout, .battle-layout { grid-template-columns: 1fr; }
-			.deck-summary { order: -1; }
-			.deck-list { max-height: 180px; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: start; }
-			.deck-controls { flex-wrap: wrap; }
-			.battle-side { order: -1; }
-			.battle-side p { margin-bottom: 9px; }
-			.battle-side .button { width: auto; margin: 0 5px 0 0; }
-			.battle-log { min-height: 36px; max-height: 76px; }
-			.battle-arena { min-height: 390px; }
-			.battle-hand { gap: 5px; }
-			.hand-card .game-card { padding: 5px; }
-			.hand-card .card-stats { margin-top: 4px; }
-			.pack-modal { padding: 15px; }
-			.pack-results { gap: 6px; }
-			.pack-results .game-card { padding: 5px; }
-			.pack-results .card-illustration { font-size: 23px; }
-			.pack-results .card-name { font-size: 9px; }
-			.pack-results .card-type, .pack-results .card-stats { font-size: 8px; }
-			.modal-footer { align-items: start; flex-direction: column; }
-			.toast { right: 12px; bottom: 73px; }
-		}
-		@media (max-width: 390px) {
-			.hero-side { width: 29%; }
-			.featured-card { width: 78px; height: 110px; }
-			.hero-content { padding: 22px 17px; }
-			.hero-content h1 { max-width: 255px; font-size: 30px; }
-			.hero-content .subheading { max-width: 240px; font-size: 11px; }
-			.hero-actions { align-items: start; flex-direction: column; gap: 7px; margin-top: 14px; }
-			.stat { flex-direction: column; align-items: start; gap: 2px; }
-		}
-	</style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Thicket Duel</title>
+<style>
+:root{--table:#16232e;--panel:#213546;--ink:#14202a;--light:#e7edf2;--gold:#e3b341;--ember:#f0a37a;--tide:#8cc6e8;--leaf:#a6d28b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--table);color:var(--light);font:15px/1.4 system-ui,sans-serif}
+header{display:flex;justify-content:space-between;align-items:baseline;padding:12px 16px;border-bottom:1px solid #2c4358}
+h1{margin:0;font:700 24px Georgia,serif}
+#status{color:var(--gold);font-weight:600}
+main{max-width:1160px;margin:0 auto;padding:12px;display:grid;gap:10px}
+#board{display:grid;gap:12px}
+.manager{display:grid;grid-template-columns:220px minmax(0,1fr);gap:12px;align-items:start}
+.decknav,.deckeditor,.pool{background:var(--panel);border-radius:10px;padding:12px;display:grid;gap:8px}
+.decknav{align-content:start}
+.decknav button,.deckitem{width:100%;text-align:left}
+.deckitem.active{outline:2px solid var(--gold)}
+.deckeditor{grid-template-columns:minmax(0,1fr) minmax(220px,.8fr)}
+.deckcards,.poolcards{display:grid;gap:6px;align-content:start;max-height:65vh;overflow:auto}
+.deckentry,.poolentry{background:#162b3b;border-radius:7px;padding:7px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.deckentry small,.poolentry small{display:block;color:#9fb4c4}
+.poolentry{flex-wrap:wrap}
+.poolentry button{margin-left:auto}
+.decktitle{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.deckactions{display:flex;gap:8px;flex-wrap:wrap}
+.deckhint{color:var(--gold);min-height:20px}
+.select{background:var(--light);color:var(--ink);border:0;border-radius:6px;padding:7px}
+.side{display:grid;gap:8px}
+.info{color:#9fb4c4;font-size:13px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.slot{width:116px;min-height:176px;border:2px dashed #35516a;border-radius:10px;display:grid;place-items:center;color:#5d7b93;font-size:13px}
+.card{width:116px;min-height:176px;padding:8px;border:2px solid var(--ink);border-radius:10px;color:var(--ink);text-align:left;font:inherit;font-size:12px;display:flex;flex-direction:column;gap:3px;cursor:pointer}
+.card b{font:700 14px Georgia,serif;text-transform:capitalize}
+.card small{font-size:11px}
+.card.ember{background:var(--ember)}.card.tide{background:var(--tide)}.card.leaf{background:var(--leaf)}
+.card[tabindex="-1"]{cursor:default}
+.card.sel{outline:3px solid var(--gold);outline-offset:2px}
+.bar{display:block;height:6px;background:#0003;border-radius:3px;overflow:hidden}
+.bar u{display:block;height:100%;background:var(--ink)}
+.pips{display:flex;gap:3px;min-height:12px}
+.pip{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--ink);display:inline-block}
+.pip.big{width:36px;height:36px;margin:auto}
+.pip.ember{background:#d9461b}.pip.tide{background:#1c7cc0}.pip.leaf{background:#3f8f2b}
+.art{display:block;width:100%;border-radius:6px;margin-bottom:2px}
+.card.trainer{background:#d6cfe6}
+.prizes{display:inline-flex;gap:3px;vertical-align:middle;margin-left:4px}
+.prize{display:inline-block;width:12px;height:17px;border-radius:2px;border:1.5px solid #5d7b93}
+.prize.got{background:var(--gold);border-color:var(--gold)}
+.mid{background:var(--panel);border-radius:10px;padding:10px 12px;display:grid;gap:8px}
+.log{margin:0;padding:0;list-style:none;font-size:13px;color:#b9cad6;min-height:70px}
+.hint{color:var(--gold);min-height:20px}
+.ctl{display:flex;gap:8px;flex-wrap:wrap}
+.btn{background:var(--light);color:var(--ink);border:0;border-radius:8px;padding:8px 12px;font:600 14px system-ui;cursor:pointer}
+.btn .pip{margin:0 1px;vertical-align:-1px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.go{background:var(--gold)}
+button:focus-visible{outline:3px solid #fff;outline-offset:2px}
+@media(max-width:700px){.manager,.deckeditor{grid-template-columns:1fr}.deckcards,.poolcards{max-height:40vh}}
+@media(max-width:520px){.card,.slot{width:100px}}
+</style>
 </head>
 <body>
-	<div class="app">
-		<aside class="sidebar">
-			<div class="brand"><div class="brand-mark">✳</div><div><div class="brand-name">wildlight</div><div class="brand-caption">Card atelier</div></div></div>
-			<div class="nav-label">Your world</div>
-			<nav class="nav-list" aria-label="Main navigation">
-				<button class="nav-button active" data-view="shop"><span class="nav-icon">✦</span><span>Card packs</span></button>
-				<button class="nav-button" data-view="collection"><span class="nav-icon">▤</span><span>Collection</span></button>
-				<button class="nav-button" data-view="deck"><span class="nav-icon">▧</span><span>Deck builder</span></button>
-				<button class="nav-button" data-view="battle"><span class="nav-icon">⚔</span><span>Battle</span></button>
-			</nav>
-			<div class="sidebar-bottom">
-				<div class="collection-note"><strong>Your collection</strong><span id="sidebar-count">0 of 16 cards discovered</span><div class="collection-progress"><span id="collection-progress"></span></div></div>
-			</div>
-		</aside>
-		<div class="workspace">
-			<header class="topbar">
-				<div class="mobile-brand">✳ wildlight</div>
-				<div class="breadcrumb">Your atelier <b id="breadcrumb-page">/ Card packs</b></div>
-				<div class="topbar-right"><div class="wallet"><span class="coin">◉</span><span id="coin-count">0</span><span style="color:var(--muted);font:400 11px var(--font)">coins</span></div><div class="profile" title="Your player profile">W</div></div>
-			</header>
-			<main>
-				<section class="view active" id="view-shop">
-					<div class="shop-hero">
-						<div class="hero-photo" aria-hidden="true"></div>
-						<div class="hero-content"><div class="eyebrow">The wilds are calling</div><h1>Find your next favorite.</h1><p class="subheading">Every pack holds five new possibilities. Hunt for mythic creatures, build your collection, and make every pull count.</p><div class="hero-actions"><button class="button primary" id="open-pack"><span>✦</span> Open a pack</button><span class="pack-price"><b>◉ 120</b> coins · 5 cards</span></div></div>
-						<div class="hero-side"><div class="feature-chip"><i>✦</i> Featured pull</div><div id="featured-card"></div></div>
-					</div>
-					<div class="stat-row"><div class="stat"><span class="stat-icon">▤</span><div><strong id="stat-cards">0 / 16</strong><span>cards discovered</span></div></div><div class="stat"><span class="stat-icon" style="color:var(--gold)">✧</span><div><strong id="stat-rare">0</strong><span>rare or better</span></div></div><div class="stat"><span class="stat-icon" style="color:var(--green)">▧</span><div><strong id="stat-deck">0 / 50</strong><span>cards in your deck</span></div></div></div>
-					<section class="recent-section"><div class="section-heading"><div><h2>Fresh from the wilds</h2><p class="subheading">Creatures worth keeping an eye out for.</p></div><div class="rarity-list"><span class="rarity-pill common"><i></i>Common</span><span class="rarity-pill uncommon"><i></i>Uncommon</span><span class="rarity-pill rare"><i></i>Rare</span><span class="rarity-pill epic"><i></i>Epic</span><span class="rarity-pill legendary"><i></i>Legendary</span></div></div><div class="card-grid" id="featured-grid"></div></section>
-				</section>
+<header><h1>Thicket Duel</h1><div style="display:flex;align-items:center;gap:12px"><button id="deck-menu" class="btn" hidden>Decks</button><div id="status" role="status"></div></div></header>
+<main id="board"></main>
+<script>
+// Thicket Duel: a small original card battler. Take 6 prizes to win.
+const BEATS={ember:'leaf',leaf:'tide',tide:'ember'}; // attacker type -> defender type it hits for double
+const TYPES=['ember','tide','leaf'];
+const ROSTER=[
+ ['Cindersnout','ember',60,[['Spark',1,10],['Blaze',2,30]]],
+ ['Ashfang','ember',90,[['Scorch',2,30],['Inferno',3,70]],1,'Cindersnout'],
+ ['Wickling','ember',50,[['Flicker',1,20]]],
+ ['Brookpup','tide',60,[['Splash',1,10],['Current',2,30]]],
+ ['Tidehorn','tide',90,[['Ram',2,30],['Tsunami',3,70]],1,'Brookpup'],
+ ['Pebblefin','tide',50,[['Nip',1,20]]],
+ ['Mossling','leaf',60,[['Tickle',1,10],['Vine Whip',2,30]]],
+ ['Briarstag','leaf',90,[['Gore',2,30],['Overgrowth',3,70]],1,'Mossling'],
+ ['Sproutkit','leaf',50,[['Nibble',1,20]]],
+ ['Cindersnout-GX','ember',180,[['Spark',1,30],['Wildfire',3,100,'gx']],0,null,'GX'],
+ ['Brookpup-ex','tide',180,[['Splash',1,30],['Tidal Crush',3,100]],0,null,'ex'],
+ ['Cindersnout-EX','ember',170,[['Spark',1,30],['Scorching Rush',3,90]],0,null,'EX'],
+ ['Ashfang-Mega-EX','ember',240,[['Blazing Impact',4,160]],1,'Cindersnout-EX','MEGA EX'],
+ ['Mossling-V','leaf',210,[['Leaf Blade',2,60],['Verdant V',3,120]],0,null,'V'],
+ ['Briarstag-VMAX','leaf',320,[['G-Max Overgrowth',3,150]],1,'Mossling-V','VMAX'],
+ ['Cinderpup','ember',50,[['Coal Toss',1,10]]],
+ ['Scorchmaw','ember',110,[['Hot Bite',2,40],['Magma Rush',3,80]],1,'Cinderpup'],
+ ['Driplet','tide',50,[['Bubble Pop',1,10]]],
+ ['Frostshell','tide',110,[['Ice Pebble',1,20],['Glacier Crash',3,80]],1,'Driplet'],
+ ['Budhorn','leaf',60,[['Seed Flick',1,10]]],
+ ['Canopyrex','leaf',120,[['Root Snare',2,40],['Forest Slam',3,90]],1,'Budhorn'],
+ ['Scorchmaw-V','ember',220,[['Flame Fang',2,60],['Volcanic V',3,130]],0,null,'V'],
+ ['Frostshell-ex','tide',210,[['Chill Touch',2,50],['Avalanche',3,120]],0,null,'ex'],
+ ['Canopyrex-VMAX','leaf',340,[['Gigantamax Grove',3,160]],2,'Canopyrex','VMAX']];
+const rnd=n=>Math.floor(Math.random()*n);
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]]}return a};
+const ABILITIES={
+ ember:{name:'Kindle',text:'Once during your turn, draw 1 card.',fx:'draw'},
+ tide:{name:'Restoring Current',text:'Once during your turn, heal 20 HP from one of your creatures.',fx:'heal'},
+ leaf:{name:'Leaf Guard',text:'Once during your turn, reduce the next damage this creature takes by 20.',fx:'guard'}
+};
+const mkC=r=>({k:'c',name:r[0],type:r[1],max:r[2],hp:r[2],atks:r[3],en:[],stage:r[4]||0,evolvesFrom:r[5]||null,rule:r[6]||'',prizes:r[6]==='VMAX'?3:r[6]?2:1,ability:r[4]?ABILITIES[r[1]]:null,shield:0,playedTurn:0,abilityTurn:0});
+const PRIZES=6;
+const TR=[['Potion','Heal 30 HP on one creature.','potion'],['Fresh Draw','Draw 2 cards.','draw'],['Free Switch','Swap your active with a bench creature.','swap'],['Sharpen','Your attacks deal +20 this turn.','boost']];
+const mkT=i=>{const t=TR[i%4];return{k:'t',type:'trainer',name:t[0],text:t[1],fx:t[2]}};
+const DECK_LIMIT=60,DECK_STORAGE='thicket-duel-decks',ACTIVE_DECK_STORAGE='thicket-duel-active';
+const creatureKey=name=>`c:${name}`,energyKey=type=>`e:${type}`,trainerKey=name=>`t:${name}`;
+const CARD_KEYS=[
+  ...ROSTER.map(r=>creatureKey(r[0])),
+  ...TYPES.map(energyKey),
+  ...TR.map(t=>trainerKey(t[0]))
+];
+const copies=(key,count)=>Array(count).fill(key);
+const starterDecks=[
+  {id:'ember',name:'Ember Team',cards:[
+    ...copies(creatureKey('Cindersnout'),4),...copies(creatureKey('Ashfang'),2),
+    ...copies(creatureKey('Cinderpup'),2),...copies(creatureKey('Scorchmaw'),2),
+    ...copies(creatureKey('Scorchmaw-V'),2),...copies(energyKey('ember'),8),
+    ...copies(trainerKey('Potion'),3),...copies(trainerKey('Fresh Draw'),3),
+    ...copies(trainerKey('Free Switch'),2),...copies(trainerKey('Sharpen'),2)]},
+  {id:'tide',name:'Tide Team',cards:[
+    ...copies(creatureKey('Brookpup'),4),...copies(creatureKey('Tidehorn'),2),
+    ...copies(creatureKey('Driplet'),2),...copies(creatureKey('Frostshell'),2),
+    ...copies(creatureKey('Frostshell-ex'),2),...copies(energyKey('tide'),8),
+    ...copies(trainerKey('Potion'),3),...copies(trainerKey('Fresh Draw'),3),
+    ...copies(trainerKey('Free Switch'),2),...copies(trainerKey('Sharpen'),2)]},
+  {id:'leaf',name:'Leaf Team',cards:[
+    ...copies(creatureKey('Mossling'),4),...copies(creatureKey('Briarstag'),2),
+    ...copies(creatureKey('Budhorn'),2),...copies(creatureKey('Canopyrex'),2),
+    ...copies(creatureKey('Mossling-V'),2),...copies(energyKey('leaf'),8),
+    ...copies(trainerKey('Potion'),3),...copies(trainerKey('Fresh Draw'),3),
+    ...copies(trainerKey('Free Switch'),2),...copies(trainerKey('Sharpen'),2)]}
+];
+let DECKS=[],selectedDeckId='ember',deckFilter='all',deckNotice='',poolScrollTop=0;
+function useStarterDecks(){
+  DECKS=starterDecks.map(d=>({...d,cards:[...d.cards]}));
+  if(!DECKS.some(d=>d.id===selectedDeckId))selectedDeckId=DECKS[0].id;
+}
+function cardFromKey(key){
+  const [kind,value]=key.split(':');
+  if(kind==='c'){
+    const row=ROSTER.find(r=>r[0]===value);
+    return row?mkC(row):null;
+  }
+  if(kind==='e'&&TYPES.includes(value))return{k:'e',type:value};
+  if(kind==='t'){
+    const i=TR.findIndex(t=>t[0]===value);
+    return i<0?null:mkT(i);
+  }
+  return null;
+}
+function loadDecks(){
+  selectedDeckId=localStorage.getItem(ACTIVE_DECK_STORAGE)||selectedDeckId;
+  const saved=localStorage.getItem(DECK_STORAGE);
+  if(!saved){useStarterDecks();return}
+  let data;
+  try{data=JSON.parse(saved)}catch{
+    useStarterDecks();
+    deckNotice='Saved deck data could not be read. Starter decks were loaded instead.';
+    return;
+  }
+  if(!Array.isArray(data)){
+    useStarterDecks();
+    deckNotice='Saved deck data was invalid. Starter decks were loaded instead.';
+    return;
+  }
+  DECKS=data.filter(d=>d&&typeof d.id==='string'&&typeof d.name==='string'&&Array.isArray(d.cards))
+    .map(d=>({...d,cards:d.cards.filter(key=>CARD_KEYS.includes(key))}));
+  if(!DECKS.length){
+    useStarterDecks();
+    deckNotice='No valid saved decks were found. Starter decks were loaded instead.';
+  }
+  if(!DECKS.some(d=>d.id===selectedDeckId))selectedDeckId=DECKS[0].id;
+}
+function saveDecks(){
+  localStorage.setItem(DECK_STORAGE,JSON.stringify(DECKS));
+  localStorage.setItem(ACTIVE_DECK_STORAGE,selectedDeckId);
+}
+function selectedDeck(){return DECKS.find(d=>d.id===selectedDeckId)}
+function deckCounts(deck){
+  return deck.cards.reduce((counts,key)=>(counts[key]=(counts[key]||0)+1,counts),{});
+}
+function deckCanStart(deck){
+  return deck.cards.length>0&&deck.cards.length<=DECK_LIMIT&&deck.cards.some(key=>{
+    const c=cardFromKey(key);return c&&c.k==='c'&&c.stage===0;
+  });
+}
+const DK={ember:'#d9461b',tide:'#1c7cc0',leaf:'#3f8f2b'},BG={ember:'#ffe3d3',tide:'#d6edfb',leaf:'#e2f3d3'};
+const SH={ember:'M0-12C6-4 10 0 6 8C3 12-3 12-6 8C-10 0-2-4 0-12Z',tide:'M0-12C8 0 8 4 8 6A8 8 0 0 1-8 6C-8 4-8 0 0-12Z',leaf:'M-10 8C-10-8 2-12 10-12C10 0 6 10-10 8Z'};
+const mo=(t,x,y,k)=>`<path d="${SH[t]}" fill="${DK[t]}" transform="translate(${x} ${y}) scale(${k})"/>`;
+const TA={
+ potion:'<rect x="44" y="12" width="12" height="9" fill="#6b4a2f"/><path d="M42 23h16l8 22q2 9-6 9H40q-8 0-6-9z" fill="#b34fd1" stroke="#14202a" stroke-width="2"/>',
+ draw:'<rect x="28" y="12" width="26" height="36" rx="3" fill="#fff" stroke="#14202a" stroke-width="2" transform="rotate(-10 41 30)"/><rect x="46" y="12" width="26" height="36" rx="3" fill="#fff" stroke="#14202a" stroke-width="2" transform="rotate(10 59 30)"/>',
+ swap:'<path d="M24 22h44l-9-9M76 40H32l9 9" fill="none" stroke="#14202a" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>',
+ boost:'<polygon points="50,6 57,24 76,24 61,35 67,54 50,43 33,54 39,35 24,24 43,24" fill="#e3b341" stroke="#14202a" stroke-width="2"/>'};
+// Card art is drawn in code as inline SVG, so there are no image files to host.
+function art(c){
+  let g;
+  if(c.k==='e')g=mo(c.type,50,31,2.1);
+  else if(c.k==='t')g=TA[c.fx];
+  else{
+    const s=c.max>=90?1.2:c.max<=50?.85:1,t=c.type,col=DK[t],i=ROSTER.findIndex(r=>r[0]===c.name);
+    const ears=t==='ember'?`<polygon points="38,22 35,8 47,17" fill="${col}"/><polygon points="62,22 65,8 53,17" fill="${col}"/>`
+      :t==='tide'?`<ellipse cx="35" cy="28" rx="5" ry="9" fill="${col}" opacity=".7"/><ellipse cx="65" cy="28" rx="5" ry="9" fill="${col}" opacity=".7"/>`
+      :`<path d="${SH.leaf}" fill="${col}" transform="translate(40 15) scale(.9)"/><path d="${SH.leaf}" fill="${col}" transform="translate(60 15) scale(-.9 .9)"/>`;
+    g=`<g style="filter:hue-rotate(${i*13%30-15}deg)"><ellipse cx="50" cy="58" rx="${24*s}" ry="2" fill="#0002"/>`+
+      mo(t,80,40,1.3)+
+      `<ellipse cx="50" cy="42" rx="${20*s}" ry="${13*s}" fill="${col}"/><ellipse cx="50" cy="45" rx="${11*s}" ry="${8*s}" fill="#fff6"/>`+ears+
+      `<circle cx="50" cy="27" r="${11*s}" fill="${col}"/>`+
+      (c.max>=90?'<path d="M42 17L38 6M58 17L62 6" stroke="#14202a" stroke-width="3.5" stroke-linecap="round"/>':'')+
+      `<circle cx="45" cy="26" r="3.2" fill="#fff"/><circle cx="55" cy="26" r="3.2" fill="#fff"/><circle cx="45.8" cy="26.4" r="1.6" fill="#14202a"/><circle cx="55.8" cy="26.4" r="1.6" fill="#14202a"/></g>`;
+  }
+  return `<svg class="art" viewBox="0 0 100 60" aria-hidden="true"><rect width="100" height="60" fill="${c.k==='t'?'#efeaf7':BG[c.type]}"/>${g}</svg>`;
+}
+const pw=c=>c.en.filter(e=>e.type===c.type).length; // only matching-type energy powers attacks
+const cost=(a,t)=>`<span class="pip ${t}"></span>`.repeat(a[1]);
+let G,screen='decks';
 
-				<section class="view" id="view-collection">
-					<div class="section-heading"><div><div class="eyebrow">Every creature has a story</div><h1>Your collection</h1><p class="subheading">Keep your favorites, sell spare copies, and find the next deck star.</p></div><button class="button" data-go="shop">✦ Find more cards</button></div>
-					<div class="toolbar"><input class="search" id="collection-search" type="search" placeholder="Search your cards..." aria-label="Search cards"><select class="filter-select" id="rarity-filter" aria-label="Filter by rarity"><option value="all">All rarities</option><option>Common</option><option>Uncommon</option><option>Rare</option><option>Epic</option><option>Legendary</option></select><span class="toolbar-spacer"></span><span class="count-label" id="collection-total">0 cards</span></div>
-					<div class="collection-grid" id="collection-grid"></div>
-				</section>
+function mkPlayer(name,deckKeys=null){
+  const p={name,bench:[],taken:0,active:null,turns:0,gxUsed:false};
+  do{
+    if(deckKeys)p.deck=deckKeys.map(cardFromKey).filter(Boolean);
+    else{
+      p.deck=[];
+      const ts=shuffle([...TYPES]).slice(0,2),pool=ROSTER.filter(r=>ts.includes(r[1]));
+      for(let i=0;i<28;i++)p.deck.push(mkC(pool[i%pool.length]));
+      for(let i=0;i<20;i++)p.deck.push({k:'e',type:ts[i%2]});
+      for(let i=0;i<12;i++)p.deck.push(mkT(i));
+    }
+    shuffle(p.deck);
+    p.hand=p.deck.splice(0,5);
+  }while(!p.hand.some(c=>c.k==='c'&&c.stage===0)); // mulligan until a basic creature is in hand
+  p.active=p.hand.splice(p.hand.findIndex(c=>c.k==='c'&&c.stage===0),1)[0];
+  return p;
+}
+function startMatch(){
+  const deck=selectedDeck();
+  if(!deckCanStart(deck)){deckNotice='A playable deck needs at least one card, no more than 60 cards, and at least one Basic creature.';render();return}
+  screen='game';
+  G={p:mkPlayer('You',deck.cards),o:mkPlayer('Rival'),turn:'p',attached:false,retreated:false,trainerUsed:false,boost:0,sel:null,promote:false,over:null,msg:'',log:[`A new duel begins with ${deck.name}.`]};
+  startTurn('p');
+}
+function showDeckManager(){screen='decks';render()}
+const L=s=>{G.log.push(s);if(G.log.length>6)G.log.shift()};
+const other=w=>w==='p'?'o':'p';
 
-				<section class="view" id="view-deck">
-					<div class="section-heading"><div><div class="eyebrow">Choose your champions</div><h1>Deck builder</h1><p class="subheading">Build a battle-ready deck. A deck can hold up to 50 cards.</p></div><div class="deck-controls"><button class="button subtle" id="clear-deck">Clear deck</button><button class="button primary" data-go="battle">⚔ Go to battle</button></div></div>
-					<div class="deck-layout"><div><div class="toolbar" style="margin-top:0"><input class="search" id="deck-search" type="search" placeholder="Find a card..." aria-label="Search available cards"><select class="filter-select" id="deck-filter" aria-label="Filter deck cards"><option value="all">All rarities</option><option>Common</option><option>Uncommon</option><option>Rare</option><option>Epic</option><option>Legendary</option></select></div><div class="collection-grid" id="deck-collection"></div></div><aside class="deck-summary"><div class="deck-total"><strong id="deck-total">0 / 50</strong><span>deck capacity</span></div><div class="deck-meter"><span id="deck-meter-fill"></span></div><div class="deck-list" id="deck-list"></div><p class="deck-hint">Need at least 10 cards to enter the arena. You can add or remove cards whenever you like.</p></aside></div>
-				</section>
+function startTurn(w){
+  const P=G[w];
+  if(!P.deck.length){L(`${P.name} can't draw.`);return win(other(w))}
+  P.turns++;
+  P.hand.push(P.deck.pop());
+  G.turn=w;G.attached=G.retreated=false;G.trainerUsed=false;G.boost=0;G.sel=null;G.abilityTarget=false;G.msg='';
+  G.promote=w==='p'&&!P.active;
+  if(G.promote)G.msg='Your creature fainted. Pick a replacement from your bench.';
+  render();
+  if(w==='o')setTimeout(aiTurn,800);
+}
+function endTurn(){startTurn(other(G.turn))}
+function win(w){G.over=w;render()}
 
-				<section class="view" id="view-battle">
-					<div class="section-heading"><div><div class="eyebrow">Prove your deck</div><h1>The arena</h1><p class="subheading">Summon creatures, manage your mana, and strike for the win.</p></div><div class="rarity-pill rare"><i></i> Win reward · 75 coins</div></div>
-					<div class="battle-layout"><div class="battle-arena"><div class="arena-header"><span class="turn-label" id="turn-label">Awaiting challenger</span><span class="count-label" id="turn-count">Build a deck to begin</span></div><div class="arena-content"><div class="fighter"><div class="fighter-avatar">🐺</div><div><div class="fighter-name">The Bramble Warden</div><div class="health-track"><i id="enemy-health-bar"></i></div></div><span class="health-number" id="enemy-health">30</span></div><div class="board" id="enemy-board"></div><div class="arena-divider">The clearing</div><div class="board" id="player-board"></div><div class="fighter you"><div class="fighter-avatar">✳</div><div><div class="fighter-name">You</div><div class="health-track"><i id="player-health-bar"></i></div></div><span class="health-number" id="player-health">30</span></div><div class="battle-bottom"><div class="mana"><span>✧</span><span id="mana-label">0 / 0</span><span class="mana-dots" id="mana-dots"></span></div><button class="button primary subtle" id="end-turn" disabled>End turn →</button></div><div class="hand-label" id="hand-label">Your hand</div><div class="battle-hand" id="battle-hand"></div></div></div><aside class="battle-side"><h3>Into the arena</h3><p>Build a deck of at least 10 cards, then challenge the Bramble Warden. You gain mana each turn. Play creatures, then end your turn to let them attack.</p><button class="button primary" id="start-battle">⚔ Start battle</button><button class="button" data-go="deck">▧ Edit your deck</button><div class="battle-log" id="battle-log"><div>Your battle log will appear here.</div></div><div class="battle-result" id="battle-result"></div></aside></div>
-				</section>
-			</main>
-		</div>
-	</div>
+function attack(w,i){
+  const A=G[w],D=G[other(w)],a=A.active.atks[i];
+  if(pw(A.active)<a[1]||(a[3]==='gx'&&A.gxUsed))return;
+  const sup=BEATS[A.active.type]===D.active.type;
+  const raw=(a[2]+G.boost)*(sup?2:1),dmg=Math.max(0,raw-D.active.shield);
+  D.active.shield=0;
+  if(a[3]==='gx')A.gxUsed=true;
+  D.active.hp-=dmg;
+  L(`${A.name==='You'?'Your':'Rival\u2019s'} ${A.active.name} uses ${a[0]} for ${dmg}${sup?' (super effective!)':''}.`);
+  if(D.active.hp<=0){
+    L(`${D.active.name} faints. ${A.name} take${A.name==='You'?'':'s'} ${D.active.prizes} prize${D.active.prizes===1?'':'s'}.`);
+    A.taken+=D.active.prizes;
+    D.active=null;
+    if(A.taken>=PRIZES||!D.bench.length)return win(w);
+    if(D===G.o)D.active=D.bench.splice(D.bench.reduce((m,c,j)=>c.hp>D.bench[m].hp?j:m,0),1)[0];
+  }
+  endTurn();
+}
 
-	<div class="overlay" id="pack-overlay" role="dialog" aria-modal="true" aria-labelledby="pack-title"><div class="pack-modal"><div class="modal-heading"><div><h2 id="pack-title">A little magic, unwrapped.</h2><p>Your new cards are now in your collection.</p></div><button class="close-button" id="close-pack" aria-label="Close pack results">×</button></div><div class="pack-results" id="pack-results"></div><div class="modal-footer"><span id="pack-summary"></span><button class="button primary" id="pack-done">Lovely. Let's go</button></div></div></div>
-	<div class="toast" id="toast" role="status"></div>
+function applyEvolution(P,where,i,c){
+  const old=where==='active'?P.active:P.bench[i];
+  if(c.stage!==old.stage+1||c.evolvesFrom!==old.name){
+    G.msg=`${c.name} can only evolve from ${c.evolvesFrom}.`;return null;
+  }
+  if(P.turns<=1||old.playedTurn===P.turns){
+    G.msg='A creature cannot evolve on your first turn or the turn it entered play.';return null;
+  }
+  c.en=old.en;c.shield=old.shield;c.hp=c.max-(old.max-old.hp);c.playedTurn=P.turns;
+  if(where==='active')P.active=c;else P.bench[i]=c;
+  L(`${P.name==='You'?'Your':'Rival\u2019s'} ${old.name} evolves into ${c.name}.`);
+  return c.rule==='MEGA EX';
+}
 
-	<script>
-		const cardData = [
-			{ id: "mossling", name: "Mossling", kind: "Grove spirit", rarity: "Common", cost: 1, attack: 1, health: 3, value: 8, emoji: "🌱", art: "photo-1448375240586-882707db888b" },
-			{ id: "emberfox", name: "Emberfox", kind: "Wildfire scout", rarity: "Common", cost: 2, attack: 2, health: 2, value: 8, emoji: "🦊", art: "photo-1472396961693-142e6e269027" },
-			{ id: "pondskip", name: "Pondskip", kind: "Tide sprite", rarity: "Common", cost: 1, attack: 1, health: 2, value: 8, emoji: "🐸", art: "photo-1437482078695-73f5ca6c96e2" },
-			{ id: "thistle", name: "Thistleback", kind: "Meadow guardian", rarity: "Common", cost: 3, attack: 2, health: 4, value: 8, emoji: "🦔", art: "photo-1500534623283-312aade485b7" },
-			{ id: "nightjar", name: "Nightjar", kind: "Dusk messenger", rarity: "Common", cost: 2, attack: 2, health: 3, value: 8, emoji: "🦉", art: "photo-1511497584788-876760111969" },
-			{ id: "glimmerfin", name: "Glimmerfin", kind: "River dancer", rarity: "Common", cost: 2, attack: 1, health: 4, value: 8, emoji: "🐟", art: "photo-1518837695005-2083093ee35b" },
-			{ id: "cloudhare", name: "Cloudhare", kind: "Skybound runner", rarity: "Common", cost: 3, attack: 3, health: 3, value: 8, emoji: "🐇", art: "photo-1470770841072-f978cf4d019e" },
-			{ id: "barkbeetle", name: "Barkbeetle", kind: "Woodland keeper", rarity: "Common", cost: 1, attack: 1, health: 4, value: 8, emoji: "🪲", art: "photo-1441974231531-c6227db76b6e" },
-			{ id: "sunmoth", name: "Sunmoth", kind: "Dawn flutter", rarity: "Uncommon", cost: 3, attack: 3, health: 3, value: 20, emoji: "🦋", art: "photo-1502082553048-f009c37129b9" },
-			{ id: "reedstalker", name: "Reedstalker", kind: "Marsh prowler", rarity: "Uncommon", cost: 4, attack: 4, health: 3, value: 20, emoji: "🐊", art: "photo-1474511320723-9a56873867b5" },
-			{ id: "windweaver", name: "Windweaver", kind: "Cloud keeper", rarity: "Uncommon", cost: 3, attack: 2, health: 5, value: 20, emoji: "🦅", art: "photo-1500530855697-b586d89ba3ee" },
-			{ id: "moonstag", name: "Moonstag", kind: "Lunar sentinel", rarity: "Rare", cost: 5, attack: 5, health: 5, value: 45, emoji: "🦌", art: "photo-1470252649378-9c29740c9fa8" },
-			{ id: "frostlynx", name: "Frostlynx", kind: "Glacier prowler", rarity: "Rare", cost: 4, attack: 5, health: 4, value: 45, emoji: "🐈", art: "photo-1451187580459-43490279c0fa" },
-			{ id: "stormheron", name: "Stormheron", kind: "Thunder herald", rarity: "Rare", cost: 6, attack: 6, health: 5, value: 45, emoji: "🪽", art: "photo-1483977399921-6cf94f6fdc3a" },
-			{ id: "starwhale", name: "Starwhale", kind: "Astral wanderer", rarity: "Epic", cost: 7, attack: 7, health: 7, value: 95, emoji: "🐋", art: "photo-1519608487953-e999c86e7455" },
-			{ id: "elderbloom", name: "Elderbloom", kind: "Ancient heart", rarity: "Legendary", cost: 8, attack: 8, health: 9, value: 190, emoji: "🌸", art: "photo-1441974231531-c6227db76b6e" }
-		];
-		const rarityColors = { Common: "var(--common)", Uncommon: "var(--uncommon)", Rare: "var(--rare)", Epic: "var(--epic)", Legendary: "var(--legendary)" };
-		const saved = loadGame();
-		const state = {
-			coins: saved.coins ?? 600,
-			collection: saved.collection ?? { mossling: 3, emberfox: 2, pondskip: 2, thistle: 2, nightjar: 2, glimmerfin: 2, cloudhare: 2, barkbeetle: 2, sunmoth: 1 },
-			deck: saved.deck ?? { mossling: 2, emberfox: 1, pondskip: 1, thistle: 1, nightjar: 1, glimmerfin: 1, cloudhare: 1, barkbeetle: 1, sunmoth: 1 },
-			view: "shop", search: "", rarityFilter: "all", battle: null, lastPack: []
-		};
-		let toastTimer;
+function useAbility(P,source,target=source){
+  const ability=source.ability;
+  if(ability.fx==='draw'){
+    if(P.deck.length)P.hand.push(P.deck.pop());
+  }else if(ability.fx==='heal'){
+    target.hp=Math.min(target.max,target.hp+20);
+  }else if(ability.fx==='guard'){
+    source.shield+=20;
+  }
+  source.abilityTurn=P.turns;
+  L(`${P.name==='You'?'Your':'Rival\u2019s'} ${source.name} uses ${ability.name}.`);
+}
 
-		function loadGame() {
-			try { return JSON.parse(localStorage.getItem("wildlight-save") || "{}"); }
-			catch { return {}; }
-		}
-		function saveGame() {
-			localStorage.setItem("wildlight-save", JSON.stringify({ coins: state.coins, collection: state.collection, deck: state.deck }));
-		}
-		function cardById(id) { return cardData.find(card => card.id === id); }
-		function countDeck() { return Object.values(state.deck).reduce((total, count) => total + count, 0); }
-		function countCollection() { return Object.values(state.collection).reduce((total, count) => total + count, 0); }
-		function rarityRank(rarity) { return ["Common", "Uncommon", "Rare", "Epic", "Legendary"].indexOf(rarity); }
-		function escapeText(value) { return String(value).replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char])); }
+function activateAbility(){
+  const source=G.p.active,ability=source.ability;
+  if(!myTurn()||!ability||source.abilityTurn===G.p.turns)return;
+  if(ability.fx==='heal'){
+    G.abilityTarget=true;G.msg='Choose one of your creatures to heal 20 HP.';
+  }else{
+    useAbility(G.p,source);G.msg='';
+  }
+  render();
+}
 
-		function createCardMarkup(card, options = {}) {
-			const rarityColor = rarityColors[card.rarity];
-			const artUrl = `https://images.unsplash.com/${card.art}?auto=format&fit=crop&w=420&q=75`;
-			const sparkle = rarityRank(card.rarity) >= 2 ? '<span class="card-sparkle">✦</span>' : "";
-			return `<div class="game-card" style="--rarity-color:${rarityColor}" aria-label="${escapeText(card.rarity)}: ${escapeText(card.name)}, ${card.attack} attack, ${card.health} health">
-				<div class="card-art"><img src="${artUrl}" alt="" loading="lazy" onerror="this.style.display='none'"></div>
-				<div class="card-top"><span class="rarity-gem">${card.rarity[0]}</span><span class="cost-gem">${card.cost}</span></div>${sparkle}
-				<span class="card-illustration" aria-hidden="true">${card.emoji}</span>
-				<div class="card-info"><div class="card-name">${escapeText(card.name)}</div><div class="card-type">${escapeText(card.kind)}</div><div class="card-stats"><span>⚔ ${card.attack}</span><span>♥ ${card.health}</span></div></div>
-			</div>`;
-		}
-		function showToast(message) {
-			const toast = document.getElementById("toast");
-			toast.textContent = message;
-			toast.classList.add("show");
-			clearTimeout(toastTimer);
-			toastTimer = setTimeout(() => toast.classList.remove("show"), 2300);
-		}
-		function setView(view) {
-			state.view = view;
-			document.querySelectorAll(".view").forEach(element => element.classList.toggle("active", element.id === `view-${view}`));
-			document.querySelectorAll(".nav-button").forEach(button => button.classList.toggle("active", button.dataset.view === view));
-			const labels = { shop: "Card packs", collection: "Collection", deck: "Deck builder", battle: "Battle" };
-			document.getElementById("breadcrumb-page").textContent = `/ ${labels[view]}`;
-			render();
-		}
-		function renderStats() {
-			const discovered = Object.values(state.collection).filter(count => count > 0).length;
-			const rareCount = cardData.filter(card => rarityRank(card.rarity) >= 2).reduce((sum, card) => sum + (state.collection[card.id] || 0), 0);
-			document.getElementById("coin-count").textContent = state.coins.toLocaleString();
-			document.getElementById("sidebar-count").textContent = `${discovered} of ${cardData.length} cards discovered`;
-			document.getElementById("collection-progress").style.width = `${discovered / cardData.length * 100}%`;
-			document.getElementById("stat-cards").textContent = `${discovered} / ${cardData.length}`;
-			document.getElementById("stat-rare").textContent = rareCount;
-			document.getElementById("stat-deck").textContent = `${countDeck()} / 50`;
-			document.getElementById("open-pack").disabled = state.coins < 120;
-		}
-		function renderCollection() {
-			const grid = document.getElementById("collection-grid");
-			const query = document.getElementById("collection-search").value.trim().toLowerCase();
-			const filter = document.getElementById("rarity-filter").value;
-			const cards = cardData.filter(card => (state.collection[card.id] || 0) > 0 && (filter === "all" || card.rarity === filter) && `${card.name} ${card.kind}`.toLowerCase().includes(query));
-			document.getElementById("collection-total").textContent = `${countCollection()} cards · ${Object.values(state.collection).filter(count => count > 0).length} unique`;
-			grid.innerHTML = cards.length ? cards.map(card => {
-				const owned = state.collection[card.id] || 0;
-				const inDeck = state.deck[card.id] || 0;
-				const canSell = owned > inDeck;
-				const canAdd = countDeck() < 50 && owned > inDeck;
-				return `<article class="collection-item" style="--rarity-color:${rarityColors[card.rarity]}">${createCardMarkup(card)}<div class="item-meta"><span class="rarity-text">${card.rarity}</span><span><strong>×${owned}</strong> owned</span></div><div class="item-actions"><button class="button subtle" data-add="${card.id}" ${canAdd ? "" : "disabled"}>＋ Deck</button><button class="button subtle danger" data-sell="${card.id}" ${canSell ? "" : "disabled"}>Sell · ◉ ${card.value}</button></div></article>`;
-			}).join("") : '<div class="empty-state">No cards match that search. Open a pack and see what turns up.</div>';
-		}
-		function renderDeck() {
-			const grid = document.getElementById("deck-collection");
-			const query = document.getElementById("deck-search").value.trim().toLowerCase();
-			const filter = document.getElementById("deck-filter").value;
-			const cards = cardData.filter(card => (state.collection[card.id] || 0) > 0 && (filter === "all" || card.rarity === filter) && `${card.name} ${card.kind}`.toLowerCase().includes(query));
-			grid.innerHTML = cards.length ? cards.map(card => {
-				const owned = state.collection[card.id] || 0;
-				const selected = state.deck[card.id] || 0;
-				return `<article class="collection-item" style="--rarity-color:${rarityColors[card.rarity]}">${createCardMarkup(card)}<div class="item-meta"><span class="rarity-text">${card.rarity}</span><span><strong>×${selected}</strong> / ${owned}</span></div><div class="item-actions"><button class="button subtle" data-add="${card.id}" ${selected >= owned || countDeck() >= 50 ? "disabled" : ""}>＋ Add to deck</button><button class="button subtle" data-remove="${card.id}" ${selected ? "" : "disabled"}>− Remove</button></div></article>`;
-			}).join("") : '<div class="empty-state">No cards here yet. Open a pack to meet some new creatures.</div>';
-			const total = countDeck();
-			document.getElementById("deck-total").textContent = `${total} / 50`;
-			document.getElementById("deck-meter-fill").style.width = `${total / 50 * 100}%`;
-			const list = document.getElementById("deck-list");
-			const entries = cardData.filter(card => state.deck[card.id]);
-			list.innerHTML = entries.length ? entries.map(card => `<div class="deck-row"><div class="mini-art" style="background-image:url('https://images.unsplash.com/${card.art}?auto=format&fit=crop&w=80&q=60')"></div><div class="deck-row-copy"><strong>${escapeText(card.name)}</strong><span>${card.cost} mana · ⚔ ${card.attack} / ♥ ${card.health}</span></div><b style="font-size:10px">×${state.deck[card.id]}</b><button data-remove="${card.id}" aria-label="Remove ${escapeText(card.name)} from deck">−</button></div>`).join("") : '<div class="deck-empty">Your deck is waiting for its first card.</div>';
-		}
-		function renderShop() {
-			const featured = cardData.find(card => card.id === "moonstag");
-			document.getElementById("featured-card").innerHTML = `<div class="featured-card" style="--rarity-color:${rarityColors[featured.rarity]}">${createCardMarkup(featured)}</div>`;
-			const picks = ["starwhale", "moonstag", "sunmoth", "emberfox", "elderbloom"].map(cardById);
-			document.getElementById("featured-grid").innerHTML = picks.map(card => `<div style="--rarity-color:${rarityColors[card.rarity]}">${createCardMarkup(card)}</div>`).join("");
-		}
-		function render() {
-			renderStats();
-			renderShop();
-			if (state.view === "collection") renderCollection();
-			if (state.view === "deck") renderDeck();
-			if (state.view === "battle") renderBattle();
-		}
+function aiTurn(){
+  if(G.over)return;
+  const O=G.o;
+  while(O.bench.length<3){
+    const i=O.hand.findIndex(c=>c.k==='c'&&c.stage===0);if(i<0)break;
+    const c=O.hand.splice(i,1)[0];c.playedTurn=O.turns;O.bench.push(c);L(`Rival benches ${c.name}.`);
+  }
+  if(O.turns>1){
+    const i=O.hand.findIndex(c=>c.k==='c'&&c.stage>0&&[O.active,...O.bench].some(t=>t&&t.name===c.evolvesFrom&&t.playedTurn<O.turns));
+    if(i>=0){
+      const c=O.hand.splice(i,1)[0],targets=[O.active,...O.bench],where=targets.findIndex(t=>t&&t.name===c.evolvesFrom&&t.playedTurn<O.turns);
+      const mega=applyEvolution(O,where===0?'active':'bench',where===0?0:where-1,c);
+      if(mega){L('Mega Evolution ends the turn.');return endTurn()}
+    }
+  }
+  if(O.active.ability&&O.active.abilityTurn!==O.turns){
+    const ability=O.active.ability;
+    if(ability.fx==='draw'&&O.deck.length)useAbility(O,O.active);
+    else if(ability.fx==='heal'){
+      const targets=[O.active,...O.bench].filter(Boolean).sort((a,b)=>(b.max-b.hp)-(a.max-a.hp));
+      if(targets[0]&&targets[0].max-targets[0].hp>=20)useAbility(O,O.active,targets[0]);
+    }else if(ability.fx==='guard')useAbility(O,O.active);
+  }
+  const e=O.hand.findIndex(c=>c.k==='e'&&c.type===O.active.type);
+  const e2=e>=0?e:O.hand.findIndex(c=>c.k==='e'&&O.bench.some(b=>b.type===c.type));
+  if(e2>=0){
+    const c=O.hand.splice(e2,1)[0],t=e>=0?O.active:O.bench.find(b=>b.type===c.type);
+    t.en.push(c);L(`Rival powers up ${t.name}.`);
+  }
+  const opts=O.active.atks.map((a,i)=>[a,i]).filter(([a])=>a[1]<=pw(O.active)&&(a[3]!=='gx'||!O.gxUsed)).sort((x,y)=>y[0][2]-x[0][2]);
+  const tr=O.hand.findIndex(c=>c.k==='t'&&(c.fx==='draw'||(c.fx==='boost'&&opts.length)||(c.fx==='potion'&&O.active.hp<=O.active.max-30)));
+  if(tr>=0){
+    const c=O.hand.splice(tr,1)[0];
+    if(c.fx==='potion')O.active.hp=Math.min(O.active.max,O.active.hp+30);else useT(O,c);
+    L(`Rival plays ${c.name}.`);
+  }
+  if(opts.length)attack('o',opts[0][1]);
+  else{L('Rival ends its turn.');endTurn()}
+}
 
-		function pickCard(rareGuaranteed = false) {
-			const roll = Math.random() * 100;
-			const rarity = rareGuaranteed ? ["Rare", "Epic", "Legendary"][roll < 69 ? 0 : roll < 94 ? 1 : 2]
-				: roll < 57 ? "Common" : roll < 82 ? "Uncommon" : roll < 94 ? "Rare" : roll < 99 ? "Epic" : "Legendary";
-			const pool = cardData.filter(card => card.rarity === rarity);
-			return pool[Math.floor(Math.random() * pool.length)];
-		}
-		function openPack() {
-			if (state.coins < 120) { showToast("You need 120 coins for a pack."); return; }
-			state.coins -= 120;
-			const pulled = Array.from({ length: 5 }, (_, index) => pickCard(index === 0));
-			pulled.forEach(card => state.collection[card.id] = (state.collection[card.id] || 0) + 1);
-			state.lastPack = pulled;
-			saveGame();
-			render();
-			document.getElementById("pack-results").innerHTML = pulled.map(card => `<div style="--rarity-color:${rarityColors[card.rarity]}">${createCardMarkup(card)}</div>`).join("");
-			document.getElementById("pack-summary").textContent = `1 guaranteed Rare or better · ${pulled.filter(card => rarityRank(card.rarity) >= 2).length} rare pulls this pack`;
-			document.getElementById("pack-overlay").classList.add("open");
-			document.getElementById("close-pack").focus();
-		}
-		function closePack() { document.getElementById("pack-overlay").classList.remove("open"); }
-		function addToDeck(id) {
-			if ((state.collection[id] || 0) <= (state.deck[id] || 0)) { showToast("You don't have another copy of that card."); return; }
-			if (countDeck() >= 50) { showToast("Your deck is full. The limit is 50 cards."); return; }
-			state.deck[id] = (state.deck[id] || 0) + 1;
-			saveGame(); render();
-			showToast(`${cardById(id).name} added to your deck.`);
-		}
-		function removeFromDeck(id) {
-			if (!state.deck[id]) return;
-			state.deck[id]--;
-			if (!state.deck[id]) delete state.deck[id];
-			saveGame(); render();
-		}
-		function sellCard(id) {
-			const card = cardById(id);
-			if ((state.collection[id] || 0) <= (state.deck[id] || 0)) { showToast("Remove a copy from your deck before selling it."); return; }
-			state.collection[id]--;
-			if (!state.collection[id]) delete state.collection[id];
-			state.coins += card.value;
-			saveGame(); render();
-			showToast(`${card.name} sold for ${card.value} coins.`);
-		}
+function useT(P,c){
+  if(c.fx==='draw')for(let i=0;i<2&&P.deck.length;i++)P.hand.push(P.deck.pop());
+  if(c.fx==='boost')G.boost=20;
+}
+// ---- player actions ----
+const myTurn=()=>G.turn==='p'&&!G.over&&!G.promote;
+function handClick(i){
+  if(!myTurn()||G.abilityTarget)return;
+  const P=G.p,c=P.hand[i];
+  if(c.k==='c'){
+    if(c.stage){
+      G.sel=G.sel===i?null:i;
+      G.msg=G.sel==null?'':`Choose a creature to evolve into ${c.name}.`;
+    }else if(P.bench.length>=3)G.msg='Your bench is full (3 max).';
+    else{G.sel=null;c.playedTurn=P.turns;P.bench.push(P.hand.splice(i,1)[0]);G.msg=''}
+  }else if(c.k==='e'&&G.attached)G.msg='Only one energy per turn.';
+  else if(c.k==='t'&&G.trainerUsed)G.msg='Only one trainer per turn.';
+  else if(c.k==='e'||c.fx==='potion'||c.fx==='swap'){
+    G.sel=G.sel===i?null:i;
+    G.msg=G.sel==null?'':c.fx==='swap'?'Choose a bench creature to swap in.':c.fx==='potion'?'Choose a creature to heal.':'Choose a creature to power up.';
+  }else{G.sel=null;P.hand.splice(i,1);useT(P,c);G.trainerUsed=true;G.msg='';L(`You play ${c.name}.`)}
+  render();
+}
+function creatureClick(where,i){
+  const P=G.p;
+  if(G.promote){
+    if(where==='bench'){P.active=P.bench.splice(i,1)[0];G.promote=false;G.msg=''}
+  }else if(myTurn()){
+    const t=where==='active'?P.active:P.bench[i];
+    if(G.abilityTarget){
+      if(t.hp===t.max){G.msg='Choose a creature with missing HP.';render();return}
+      useAbility(P,G.p.active,t);G.abilityTarget=false;G.msg='';
+    }else if(G.sel!=null){
+      const c=P.hand[G.sel];
+      if(c.k==='c'&&c.stage){
+        const mega=applyEvolution(P,where,i,c);
+        if(mega===null){render();return}
+        P.hand.splice(G.sel,1);G.sel=null;G.msg='';
+        if(mega){L('Mega Evolution ends your turn.');endTurn();return}
+      }else if(c.k==='e'){t.en.push(c);G.attached=true}
+      else if(c.fx==='potion'){t.hp=Math.min(t.max,t.hp+30);G.trainerUsed=true;L(`You heal ${t.name}.`)}
+      else if(where==='bench'){[P.active,P.bench[i]]=[P.bench[i],P.active];G.trainerUsed=true;L(`You swap in ${P.active.name}.`)}
+      else{G.msg='Pick a bench creature.';render();return}
+      P.hand.splice(G.sel,1);G.sel=null;G.msg='';
+    }else if(where==='bench'){
+      if(G.retreated)G.msg='You already switched this turn.';
+      else if(!P.active.en.length)G.msg='Switching costs 1 energy, and your active creature has none.';
+      else{P.active.en.pop();[P.active,P.bench[i]]=[P.bench[i],P.active];G.retreated=true;G.msg='Switched (1 energy discarded).'}
+    }
+  }
+  render();
+}
 
-		function addLog(message) {
-			const log = document.getElementById("battle-log");
-			if (log.firstElementChild?.textContent === "Your battle log will appear here.") log.innerHTML = "";
-			const entry = document.createElement("div");
-			entry.textContent = message;
-			log.prepend(entry);
-		}
-		function startBattle() {
-			if (countDeck() < 10) { showToast(`Add ${10 - countDeck()} more cards to your deck first.`); setView("deck"); return; }
-			const cards = cardData.flatMap(card => Array.from({ length: state.deck[card.id] || 0 }, () => card.id));
-			for (let index = cards.length - 1; index > 0; index--) {
-				const swap = Math.floor(Math.random() * (index + 1));
-				[cards[index], cards[swap]] = [cards[swap], cards[index]];
-			}
-			state.battle = { deck: cards, enemyDeck: [...cards].sort(() => Math.random() - .5), hand: [], enemyHand: [], playerBoard: [], enemyBoard: [], playerHealth: 30, enemyHealth: 30, mana: 1, maxMana: 1, turn: 1, active: true };
-			state.battle.hand = state.battle.deck.splice(0, Math.min(5, state.battle.deck.length));
-			document.getElementById("battle-log").innerHTML = "";
-			document.getElementById("battle-result").textContent = "";
-			addLog("The duel begins. May the wilds favor you.");
-			renderBattle();
-			showToast("The Bramble Warden accepts your challenge.");
-		}
-		function playCard(index) {
-			const battle = state.battle;
-			if (!battle?.active) return;
-			const card = cardById(battle.hand[index]);
-			if (!card || card.cost > battle.mana || battle.playerBoard.length >= 4) return;
-			battle.mana -= card.cost;
-			battle.hand.splice(index, 1);
-			battle.playerBoard.push({ id: card.id, health: card.health, ready: false });
-			addLog(`You summon ${card.name}.`);
-			renderBattle();
-		}
-		function attackWith(board, enemyBoard, target, isPlayer) {
-			for (const unit of board) {
-				if (!unit.ready) continue;
-				const card = cardById(unit.id);
-				if (enemyBoard.length) {
-					const defender = enemyBoard[0];
-					const defenderCard = cardById(defender.id);
-					defender.health -= card.attack;
-					unit.health -= defenderCard.attack;
-					addLog(`${card.name} clashes with ${defenderCard.name}.`);
-					if (defender.health <= 0) { addLog(`${defenderCard.name} leaves the clearing.`); enemyBoard.shift(); }
-					if (unit.health <= 0) addLog(`${card.name} falls in battle.`);
-				} else {
-					if (isPlayer) battle.enemyHealth = Math.max(0, battle.enemyHealth - card.attack);
-					else battle.playerHealth = Math.max(0, battle.playerHealth - card.attack);
-					addLog(`${card.name} strikes for ${card.attack}.`);
-				}
-				unit.ready = false;
-				if ((isPlayer ? battle.enemyHealth : battle.playerHealth) <= 0) break;
-			}
-			for (let index = board.length - 1; index >= 0; index--) {
-				if (board[index].health <= 0) board.splice(index, 1);
-			}
-		}
-		function enemyTurn() {
-			const battle = state.battle;
-			battle.maxMana = Math.min(10, battle.maxMana + 1);
-			battle.mana = battle.maxMana;
-			if (battle.enemyDeck.length) battle.enemyHand.push(battle.enemyDeck.pop());
-			while (battle.enemyBoard.length < 4) {
-				const index = battle.enemyHand.findIndex(id => cardById(id).cost <= battle.mana);
-				if (index < 0) break;
-				const card = cardById(battle.enemyHand[index]);
-				battle.mana -= card.cost;
-				battle.enemyHand.splice(index, 1);
-				battle.enemyBoard.push({ id: card.id, health: card.health, ready: false });
-				addLog(`The Warden summons ${card.name}.`);
-			}
-			battle.enemyBoard.forEach(unit => unit.ready = true);
-			attackWith(battle.enemyBoard, battle.playerBoard, null, false);
-			if (battle.playerHealth <= 0) { finishBattle(false); return; }
-			battle.turn++;
-			battle.maxMana = Math.min(10, battle.turn);
-			battle.mana = battle.maxMana;
-			if (battle.deck.length && battle.hand.length < 5) battle.hand.push(battle.deck.pop());
-			battle.playerBoard.forEach(unit => unit.ready = true);
-			addLog(`Turn ${battle.turn}: you have ${battle.mana} mana.`);
-			renderBattle();
-		}
-		function endTurn() {
-			const battle = state.battle;
-			if (!battle?.active) return;
-			attackWith(battle.playerBoard, battle.enemyBoard, null, true);
-			if (battle.enemyHealth <= 0) { finishBattle(true); return; }
-			battle.mana = 0;
-			renderBattle();
-			window.setTimeout(enemyTurn, 450);
-		}
-		function finishBattle(won) {
-			state.battle.active = false;
-			if (won) {
-				state.coins += 75;
-				saveGame();
-				document.getElementById("battle-result").textContent = "Victory! +75 coins";
-				addLog("You win the duel. The arena rewards 75 coins.");
-			} else {
-				document.getElementById("battle-result").textContent = "The Warden wins this round. Try another deck.";
-				addLog("The Warden wins this duel. Ready for a rematch?");
-			}
-			renderBattle(); renderStats();
-		}
-		function renderBattle() {
-			const battle = state.battle;
-			const start = document.getElementById("start-battle");
-			start.disabled = countDeck() < 10;
-			start.textContent = battle?.active ? "Duel in progress" : "⚔ Start battle";
-			if (!battle) {
-				document.getElementById("turn-label").textContent = "Awaiting challenger";
-				document.getElementById("turn-count").textContent = `${countDeck()} deck cards · ${Math.max(0, 10 - countDeck())} more needed`;
-				document.getElementById("player-board").innerHTML = '<div class="board-empty">Your creatures will gather here.</div>';
-				document.getElementById("enemy-board").innerHTML = '<div class="board-empty">The Warden is waiting in the mist.</div>';
-				document.getElementById("battle-hand").innerHTML = '<div class="board-empty">Start a battle to draw your opening hand.</div>';
-				document.getElementById("player-health").textContent = "30";
-				document.getElementById("enemy-health").textContent = "30";
-				document.getElementById("player-health-bar").style.width = "100%";
-				document.getElementById("enemy-health-bar").style.width = "100%";
-				document.getElementById("mana-label").textContent = "0 / 0";
-				document.getElementById("mana-dots").innerHTML = "";
-				document.getElementById("end-turn").disabled = true;
-				return;
-			}
-			document.getElementById("turn-label").textContent = battle.active ? `Turn ${battle.turn} · Your move` : "Duel complete";
-			document.getElementById("turn-count").textContent = `${battle.deck.length} cards remaining`;
-			document.getElementById("player-health").textContent = battle.playerHealth;
-			document.getElementById("enemy-health").textContent = battle.enemyHealth;
-			document.getElementById("player-health-bar").style.width = `${battle.playerHealth / 30 * 100}%`;
-			document.getElementById("enemy-health-bar").style.width = `${battle.enemyHealth / 30 * 100}%`;
-			document.getElementById("mana-label").textContent = `${battle.mana} / ${battle.maxMana}`;
-			document.getElementById("mana-dots").innerHTML = Array.from({ length: battle.maxMana }, (_, index) => `<i class="${index < battle.mana ? "filled" : ""}"></i>`).join("");
-			document.getElementById("player-board").innerHTML = renderBoard(battle.playerBoard, battle.active);
-			document.getElementById("enemy-board").innerHTML = renderBoard(battle.enemyBoard, false);
-			document.getElementById("battle-hand").innerHTML = battle.hand.length ? battle.hand.map((id, index) => {
-				const card = cardById(id);
-				return `<button class="hand-card" data-play="${index}" aria-label="Play ${escapeText(card.name)}, costs ${card.cost} mana" ${(battle.active && card.cost <= battle.mana && battle.playerBoard.length < 4) ? "" : "disabled"}><span style="--rarity-color:${rarityColors[card.rarity]}">${createCardMarkup(card)}</span></button>`;
-			}).join("") : '<div class="board-empty">No cards in hand. End your turn to draw.</div>';
-			document.getElementById("end-turn").disabled = !battle.active;
-		}
-		function renderBoard(board, ready) {
-			return board.length ? board.map(unit => {
-				const card = cardById(unit.id);
-				return `<div class="board-unit ${ready && unit.ready ? "ready" : ""}" style="--rarity-color:${rarityColors[card.rarity]}"><span class="unit-emoji">${card.emoji}</span><strong>${escapeText(card.name)}</strong><div class="unit-numbers"><span>⚔ ${card.attack}</span><span>♥ ${unit.health}</span></div></div>`;
-			}).join("") : '<div class="board-empty">No creatures on this side of the clearing.</div>';
-		}
-
-		document.querySelectorAll(".nav-button").forEach(button => button.addEventListener("click", () => setView(button.dataset.view)));
-		document.querySelectorAll("[data-go]").forEach(button => button.addEventListener("click", () => setView(button.dataset.go)));
-		document.getElementById("open-pack").addEventListener("click", openPack);
-		document.getElementById("close-pack").addEventListener("click", closePack);
-		document.getElementById("pack-done").addEventListener("click", closePack);
-		document.getElementById("pack-overlay").addEventListener("click", event => { if (event.target.id === "pack-overlay") closePack(); });
-		document.getElementById("collection-search").addEventListener("input", renderCollection);
-		document.getElementById("rarity-filter").addEventListener("change", renderCollection);
-		document.getElementById("deck-search").addEventListener("input", renderDeck);
-		document.getElementById("deck-filter").addEventListener("change", renderDeck);
-		document.getElementById("clear-deck").addEventListener("click", () => { state.deck = {}; saveGame(); render(); showToast("Your deck has been cleared."); });
-		document.getElementById("start-battle").addEventListener("click", startBattle);
-		document.getElementById("end-turn").addEventListener("click", endTurn);
-		document.getElementById("collection-grid").addEventListener("click", event => {
-			const add = event.target.closest("[data-add]"); const sell = event.target.closest("[data-sell]");
-			if (add) addToDeck(add.dataset.add); if (sell) sellCard(sell.dataset.sell);
-		});
-		document.getElementById("deck-collection").addEventListener("click", event => {
-			const add = event.target.closest("[data-add]"); const remove = event.target.closest("[data-remove]");
-			if (add) addToDeck(add.dataset.add); if (remove) removeFromDeck(remove.dataset.remove);
-		});
-		document.getElementById("deck-list").addEventListener("click", event => {
-			const remove = event.target.closest("[data-remove]"); if (remove) removeFromDeck(remove.dataset.remove);
-		});
-		document.getElementById("battle-hand").addEventListener("click", event => {
-			const play = event.target.closest("[data-play]"); if (play) playCard(Number(play.dataset.play));
-		});
-		document.addEventListener("keydown", event => { if (event.key === "Escape") closePack(); });
-		render();
-	</script>
+// ---- rendering ----
+const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e};
+function cardEl(c,fn,sel){
+  const b=el('button','card '+c.type+(sel?' sel':''));
+  if(c.k==='e')b.innerHTML=`${art(c)}<b>${c.type} energy</b>`;
+  else if(c.k==='t')b.innerHTML=`${art(c)}<b>${c.name}</b><small>${c.text}</small>`;
+  else b.innerHTML=`${art(c)}<b>${c.name}</b><small>${c.rule?c.rule+' \u00b7 ':''}${c.stage?`Stage ${c.stage} \u00b7 `:'Basic \u00b7 '}${c.type} \u00b7 HP ${c.hp}/${c.max}</small>`+
+    `<i class="bar"><u style="width:${100*c.hp/c.max}%"></u></i>`+
+    `<span class="pips">${c.en.map(e=>`<span class="pip ${e.type}"></span>`).join('')}</span>`+
+    c.atks.map(a=>`<small>${a[0]}${a[3]==='gx'?' GX':''} ${cost(a,c.type)} ${c===G.p.active&&G.boost?`${a[2]} + ${G.boost} = ${a[2]+G.boost}`:a[2]}</small>`).join('')+
+    (c.ability?`<small><b>Ability: ${c.ability.name}</b> ${c.ability.text}</small>`:'');
+  if(fn)b.onclick=fn;else b.tabIndex=-1;
+  return b;
+}
+function changeDeck(id){
+  selectedDeckId=id;deckNotice='';saveDecks();render();
+}
+function addCardToDeck(key){
+  const deck=selectedDeck(),copiesInDeck=deckCounts(deck)[key]||0;
+  if(deck.cards.length>=DECK_LIMIT){deckNotice='Decks can contain no more than 60 cards, including Energy and Trainers.';render();return}
+  if(key.startsWith('c:')&&copiesInDeck>=4){deckNotice='A deck can contain up to 4 copies of each creature.';render();return}
+  deck.cards.push(key);deckNotice='';saveDecks();render();
+}
+function removeCardFromDeck(key){
+  const deck=selectedDeck(),i=deck.cards.lastIndexOf(key);
+  if(i>=0)deck.cards.splice(i,1);
+  deckNotice='';saveDecks();render();
+}
+function createDeck(){
+  const id=`deck-${Date.now()}`;
+  DECKS.push({id,name:'My Deck',cards:[]});selectedDeckId=id;deckNotice='New deck created. Add cards to play (maximum 60).';saveDecks();render();
+}
+function renameDeck(name){
+  const trimmed=name.trim();
+  if(!trimmed){deckNotice='Deck names cannot be empty.';render();return}
+  selectedDeck().name=trimmed;deckNotice='Deck renamed.';saveDecks();render();
+}
+function deleteDeck(){
+  if(DECKS.length===1){deckNotice='Keep at least one deck.';render();return}
+  DECKS=DECKS.filter(d=>d.id!==selectedDeckId);selectedDeckId=DECKS[0].id;deckNotice='Deck deleted.';saveDecks();render();
+}
+function renderDeckManager(){
+  const previousPool=document.getElementById('pool-cards');
+  if(previousPool)poolScrollTop=previousPool.scrollTop;
+  const pageScrollX=window.scrollX,pageScrollY=window.scrollY;
+  if(document.activeElement instanceof HTMLElement)document.activeElement.blur();
+  const B=document.getElementById('board'),deck=selectedDeck(),counts=deckCounts(deck);
+  B.innerHTML='';
+  const manager=el('div','manager'),nav=el('aside','decknav'),editor=el('section','deckeditor');
+  nav.append(el('h2',null,'Your decks'));
+  DECKS.forEach(d=>{
+    const b=el('button','btn deckitem'+(d.id===selectedDeckId?' active':''));
+    b.textContent=`${d.name} (${d.cards.length}/${DECK_LIMIT})`;b.onclick=()=>changeDeck(d.id);nav.append(b);
+  });
+  const create=el('button','btn','New deck');create.onclick=createDeck;nav.append(create);
+  const top=el('div','decktitle'),title=el('h2');title.textContent='Edit deck';top.append(title);
+  const actions=el('div','deckactions');
+  const name=el('input','select');name.type='text';name.maxLength=30;name.value=deck.name;name.setAttribute('aria-label','Deck name');
+  const rename=el('button','btn','Rename');rename.onclick=()=>renameDeck(name.value);
+  const remove=el('button','btn','Delete deck');remove.disabled=DECKS.length===1;remove.onclick=deleteDeck;
+  actions.append(name,rename,remove);top.append(actions);
+  const counter=el('div','info',`${deck.cards.length}/${DECK_LIMIT} cards. Creature, Trainer, and Energy cards all count toward the 60-card maximum.`);
+  const start=el('button','btn go','Start match');start.disabled=!deckCanStart(deck);start.onclick=startMatch;
+  const hint=el('div','deckhint',deckNotice||(!deckCanStart(deck)?'A playable deck needs at least one card, no more than 60 cards, and at least one Basic creature.':'Ready to play.'));
+  const cards=el('div','deckcards');
+  if(!deck.cards.length)cards.append(el('div','info','This deck is empty. Add cards from the pool.'));
+  Object.entries(counts).forEach(([key,count])=>{
+    const c=cardFromKey(key),entry=el('div','deckentry'),label=el('span');
+    label.innerHTML=`<b>${c.name}${c.k==='e'?' Energy':''}</b><small>${c.k==='c'?`${c.stage?'Stage '+c.stage:'Basic'} · ${c.type} · ${c.max} HP`:c.k==='e'?'Energy':c.text}</small>`;
+    const removeOne=el('button','btn','−');removeOne.setAttribute('aria-label',`Remove one ${c.name}`);removeOne.onclick=()=>removeCardFromDeck(key);
+    const amount=el('span',null,String(count));entry.append(label,amount,removeOne);cards.append(entry);
+  });
+  const pool=el('section','pool'),poolTitle=el('h3',null,'Card pool'),filter=el('select','select');
+  [['all','All cards'],['ember','Ember'],['tide','Tide'],['leaf','Leaf']].forEach(([value,label])=>{
+    const option=document.createElement('option');option.value=value;option.textContent=label;filter.append(option);
+  });
+  filter.value=deckFilter;filter.setAttribute('aria-label','Filter card pool by type');filter.onchange=()=>{deckFilter=filter.value;render()};
+  const poolCards=el('div','poolcards');poolCards.id='pool-cards';
+  poolCards.onscroll=()=>{poolScrollTop=poolCards.scrollTop};
+  CARD_KEYS.filter(key=>{
+    const c=cardFromKey(key);return deckFilter==='all'||c.k==='t'||c.type===deckFilter;
+  }).forEach(key=>{
+    const c=cardFromKey(key),entry=el('div','poolentry'),label=el('span'),amount=counts[key]||0;
+    label.innerHTML=`<b>${c.name}${c.k==='e'?' Energy':''}</b><small>${c.k==='c'?`${c.stage?'Stage '+c.stage:'Basic'} · ${c.type} · ${c.max} HP`:c.k==='e'?'Energy':c.text}</small>`;
+    const add=el('button','btn','+');add.setAttribute('aria-label',`Add ${c.name} to deck`);
+    add.disabled=deck.cards.length>=DECK_LIMIT||(key.startsWith('c:')&&amount>=4);
+    add.onclick=()=>addCardToDeck(key);entry.append(label,el('span',null,amount?`×${amount}`:''),add);poolCards.append(entry);
+  });
+  pool.append(poolTitle,filter,poolCards);
+  const listing=el('section');listing.append(top,counter,hint,start,cards);
+  editor.append(listing,pool);manager.append(nav,editor);B.append(manager);
+  poolCards.scrollTop=poolScrollTop;
+  requestAnimationFrame(()=>window.scrollTo(pageScrollX,pageScrollY));
+  document.getElementById('status').textContent='Build your deck';
+}
+function side(P,mine){
+  const s=el('section','side');
+  s.append(el('div','info',`${P.name}: prizes <span class=\"prizes\">${Array.from({length:PRIZES},(_,i)=>`<i class=\"prize${i<P.taken?' got':''}\"></i>`).join('')}</span> \u00b7 deck ${P.deck.length} \u00b7 hand ${P.hand.length}`));
+  const act=el('div','row'),ben=el('div','row');
+  act.append(P.active?cardEl(P.active,mine?()=>creatureClick('active'):null):el('div','slot','No active'));
+  for(let i=0;i<3;i++)ben.append(P.bench[i]?cardEl(P.bench[i],mine?()=>creatureClick('bench',i):null):el('div','slot','Bench'));
+  if(mine){s.append(act,ben);
+    const h=el('div','row');
+    P.hand.forEach((c,i)=>h.append(cardEl(c,()=>handClick(i),G.sel===i)));
+    s.append(el('div','info','Your hand'),h);
+  }else s.append(ben,act);
+  return s;
+}
+function mid(){
+  const m=el('section','mid');
+  const ul=el('ul','log');G.log.forEach(t=>ul.append(el('li',null,t)));
+  m.append(ul,el('div','hint',G.msg));
+  const c=el('div','ctl');
+  if(G.over){
+    const b=el('button','btn go',G.over==='p'?'You win! Back to decks':'Rival wins. Back to decks');
+    b.onclick=showDeckManager;c.append(b);
+  }else if(myTurn()){
+    const ability=G.p.active.ability;
+    if(ability){
+      const ab=el('button','btn',`Ability: ${ability.name}`);
+      ab.disabled=G.p.active.abilityTurn===G.p.turns;ab.title=ability.text;ab.onclick=activateAbility;c.append(ab);
+    }
+    G.p.active.atks.forEach((a,i)=>{
+      const power=G.boost?`${a[2]} + ${G.boost} = ${a[2]+G.boost}`:a[2];
+      const b=el('button','btn',`${a[0]}${a[3]==='gx'?' GX':''} ${cost(a,G.p.active.type)} ${power}`);
+      b.disabled=pw(G.p.active)<a[1]||(a[3]==='gx'&&G.p.gxUsed);b.title=`Needs ${a[1]} ${G.p.active.type} energy${a[3]==='gx'?' · once per game':''}`;b.onclick=()=>attack('p',i);c.append(b);
+    });
+    const e=el('button','btn go','End turn');e.onclick=()=>{L('You end your turn.');endTurn()};c.append(e);
+  }
+  m.append(c);
+  return m;
+}
+function render(){
+  const menu=document.getElementById('deck-menu');
+  menu.hidden=screen!=='game';menu.onclick=showDeckManager;
+  if(screen==='decks'){renderDeckManager();return}
+  const B=document.getElementById('board');B.innerHTML='';
+  B.append(side(G.o,false),mid(),side(G.p,true));
+  document.getElementById('status').textContent=G.over?(G.over==='p'?'You win!':'Rival wins'):G.turn==='p'?'Your turn':'Rival is thinking\u2026';
+}
+loadDecks();
+render();
+</script>
 </body>
 </html>
